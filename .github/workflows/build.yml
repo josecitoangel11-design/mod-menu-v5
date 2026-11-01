@@ -20,11 +20,15 @@ jobs:
       - name: Preparar Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Aceptar licencias Android
+        run: |
+          yes | sdkmanager --licenses || true
+
       - name: Instalar herramientas Android
         run: |
           sdkmanager "platform-tools"
           sdkmanager "platforms;android-35"
-          sdkmanager "build-tools;35.0.0"
+          sdkmanager "build-tools;37.0.0"
 
       - name: Preparar Python
         uses: actions/setup-python@v5
@@ -47,7 +51,8 @@ jobs:
 
       - name: Construir APK
         run: |
-          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          export ANDROID_HOME="$ANDROID_SDK_ROOT"
+          export ANDROIDSDK="$ANDROID_HOME"
           buildozer android debug
 
       - name: Guardar APK
