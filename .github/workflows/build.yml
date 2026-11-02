@@ -1,63 +1,12 @@
-name: Construir APK
-
-on:
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Descargar proyecto
-        uses: actions/checkout@v4
-
-      - name: Preparar Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Preparar Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Aceptar licencias Android
+name:       - name: Aceptar licencias del SDK de Buildozer
         run: |
-          yes | sdkmanager --licenses || true
-
-      - name: Instalar herramientas Android
-        run: |
-          sdkmanager "platform-tools"
-          sdkmanager "platforms;android-35"
-          sdkmanager "build-tools;37.0.0"
-
-      - name: Preparar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Instalar dependencias
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            git zip unzip autoconf libtool \
-            pkg-config zlib1g-dev libncurses5-dev \
-            libncursesw5-dev cmake libffi-dev \
-            libssl-dev
-
-      - name: Instalar Buildozer
-        run: |
-          python -m pip install --upgrade pip
-          pip install buildozer cython==0.29.36
+          SDK="$HOME/.buildozer/android/platform/android-sdk"
+          mkdir -p "$SDK/licenses"
+          yes | sdkmanager --sdk_root="$SDK" --licenses || true
+          sdkmanager --sdk_root="$SDK" "build-tools;37.0.0"
 
       - name: Construir APK
         run: |
-          export ANDROID_HOME="$ANDROID_SDK_ROOT"
+          export ANDROID_HOME="$HOME/.buildozer/android/platform/android-sdk"
           export ANDROIDSDK="$ANDROID_HOME"
           buildozer android debug
-
-      - name: Guardar APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Gaming-Control-APK
-          path: bin/*.apk
-          if-no-files-found: error
